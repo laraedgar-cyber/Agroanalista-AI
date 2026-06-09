@@ -186,7 +186,9 @@ export const ResultsPreview: React.FC<ResultsPreviewProps> = ({ data, onReset, o
                   </h4>
                   <div className="space-y-3">
                     {classifiedData.majors.map((item, idx) => (
-                      <MiniRow key={idx} label={item.label} value={item.value} unit={item.unit} />
+                      <React.Fragment key={idx}>
+                        <MiniRow label={item.label} value={item.value} unit={item.unit} />
+                      </React.Fragment>
                     ))}
                   </div>
                 </div>
@@ -200,7 +202,9 @@ export const ResultsPreview: React.FC<ResultsPreviewProps> = ({ data, onReset, o
                   <div className="space-y-3">
                     {classifiedData.secondaries.length > 0 ? (
                       classifiedData.secondaries.map((item, idx) => (
-                        <MiniRow key={idx} label={item.label} value={item.value} unit={item.unit} isRaw={item.isRaw} />
+                        <React.Fragment key={idx}>
+                          <MiniRow label={item.label} value={item.value} unit={item.unit} isRaw={item.isRaw} />
+                        </React.Fragment>
                       ))
                     ) : (
                       <p className="text-xs text-gray-400 italic">No detectados</p>
@@ -217,7 +221,9 @@ export const ResultsPreview: React.FC<ResultsPreviewProps> = ({ data, onReset, o
                   <div className="space-y-3">
                     {classifiedData.micros.length > 0 ? (
                       classifiedData.micros.map((item, idx) => (
-                        <MiniRow key={idx} label={item.label} value={item.value} unit={item.unit} isRaw={item.isRaw} />
+                        <React.Fragment key={idx}>
+                          <MiniRow label={item.label} value={item.value} unit={item.unit} isRaw={item.isRaw} />
+                        </React.Fragment>
                       ))
                     ) : (
                       <p className="text-xs text-gray-400 italic">No detectados (Zn, B, Fe, Mn, Cu)</p>

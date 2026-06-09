@@ -188,7 +188,10 @@ const calculateFertilizerMix = (
   let currentDeficitP = reqP;
   let currentDeficitK = reqK;
 
-  const bagWeightKg = 100 * CONVERSIONS.LB_TO_KG; 
+  const getBagWeightKg = (fert: Fertilizer): number => {
+    const bagWeightLbs = fert.bagWeight > 0 ? fert.bagWeight : 100;
+    return bagWeightLbs * CONVERSIONS.LB_TO_KG;
+  };
 
   // --- FUNCIONES AUXILIARES ---
 
@@ -207,6 +210,7 @@ const calculateFertilizerMix = (
 
     // Calcular aportes con eficiencia real
     const effN = getEffectiveN(fert);
+    const bagWeightKg = getBagWeightKg(fert);
     
     // Aporte total del lote de sacos
     const effectiveSuppliedN = (count * bagWeightKg * effN) / 100;
@@ -251,8 +255,8 @@ const calculateFertilizerMix = (
         if (nutrient === 'k') content = fert.k;
 
         if (content > 0) {
-            // Precio por unidad de porcentaje efectivo
-            const costPerUnit = fert.price / content;
+            const nutrientKgPerBag = (getBagWeightKg(fert) * content) / 100;
+            const costPerUnit = fert.price / nutrientKgPerBag;
             
             if (costPerUnit < bestCostPerUnit) {
                 bestCostPerUnit = costPerUnit;
@@ -280,6 +284,7 @@ const calculateFertilizerMix = (
 
     potentialComplexes.forEach(f => {
         const effN = getEffectiveN(f);
+        const bagWeightKg = getBagWeightKg(f);
         
         // Calcular "Nutrientes Útiles" para la situación actual
         // Solo contamos el porcentaje del saco que va a cubrir una necesidad real
@@ -293,7 +298,8 @@ const calculateFertilizerMix = (
         if (currentDeficitK > 10) usefulPoints += f.k;
 
         if (usefulPoints > 0) {
-            const score = usefulPoints / f.price; // Cuantos puntos de nutriente útil compro con 1 dólar
+            const usefulKgPerBag = (bagWeightKg * usefulPoints) / 100;
+            const score = usefulKgPerBag / Math.max(f.price, 0.01);
             
             if (score > maxUsefulPointsPerDollar) {
                 maxUsefulPointsPerDollar = score;
@@ -310,11 +316,13 @@ const calculateFertilizerMix = (
         // Determinar la dosis basada en el limitante más crítico entre P y K
         // Usamos una lógica conservadora para no sobre-fertilizar masivamente el otro
         if (currentDeficitK > currentDeficitP && fert.k > 0) {
+             const bagWeightKg = getBagWeightKg(fert);
              const kgKPerBag = (bagWeightKg * fert.k) / 100;
              bags = Math.ceil(currentDeficitK / kgKPerBag);
              // Ajuste: Si esto provoca un exceso masivo de P (ej > 200%), reducir dosis? 
              // Por simplicidad, asumimos que cubrir el déficit es prioridad.
         } else if (currentDeficitP > 0 && fert.p > 0) {
+             const bagWeightKg = getBagWeightKg(fert);
              const kgPPerBag = (bagWeightKg * fert.p) / 100;
              bags = Math.ceil(currentDeficitP / kgPPerBag);
         }
@@ -331,6 +339,7 @@ const calculateFertilizerMix = (
       const kSourceId = findCheapestSource('k');
       if (kSourceId) {
         const fert = pool.find(f => f.id === kSourceId)!;
+        const bagWeightKg = getBagWeightKg(fert);
         const kgKPerBag = (bagWeightKg * fert.k) / 100;
         if (kgKPerBag > 0) {
             const bags = Math.ceil(currentDeficitK / kgKPerBag);
@@ -344,6 +353,7 @@ const calculateFertilizerMix = (
       const pSourceId = findCheapestSource('p');
       if (pSourceId) {
         const fert = pool.find(f => f.id === pSourceId)!;
+        const bagWeightKg = getBagWeightKg(fert);
         const kgPPerBag = (bagWeightKg * fert.p) / 100;
         if (kgPPerBag > 0) {
             const bags = Math.ceil(currentDeficitP / kgPPerBag);
@@ -359,6 +369,7 @@ const calculateFertilizerMix = (
     if (nSourceId) {
         const fert = pool.find(f => f.id === nSourceId)!;
         const effN = getEffectiveN(fert);
+        const bagWeightKg = getBagWeightKg(fert);
         const kgNPerBag = (bagWeightKg * effN) / 100;
         
         if (kgNPerBag > 0) {

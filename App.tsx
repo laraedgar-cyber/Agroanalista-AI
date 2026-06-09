@@ -74,7 +74,10 @@ function App() {
           setStep('review');
         } catch (err) {
           console.error(err);
-          setErrorMessage("Error procesando el archivo con IA. Intenta con una imagen más clara o un PDF diferente.");
+          const message = err instanceof Error
+            ? err.message
+            : "Error procesando el archivo con IA. Intenta con una imagen más clara o un PDF diferente.";
+          setErrorMessage(message);
           setStatus(AnalysisStatus.ERROR);
         }
       };

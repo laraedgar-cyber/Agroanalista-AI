@@ -15,13 +15,16 @@ export const FertilizerConfig: React.FC<FertilizerConfigProps> = ({ selectedCrop
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!areaSize || !targetYield) return;
+    const parsedAreaSize = parseFloat(areaSize);
+    const parsedTargetYield = parseFloat(targetYield);
+    if (!Number.isFinite(parsedAreaSize) || !Number.isFinite(parsedTargetYield)) return;
+    if (parsedAreaSize <= 0 || parsedTargetYield <= 0) return;
 
     onCalculate({
       cropType: selectedCrop,
-      areaSize: parseFloat(areaSize),
+      areaSize: parsedAreaSize,
       areaUnit,
-      targetYield: parseFloat(targetYield),
+      targetYield: parsedTargetYield,
       yieldUnit
     });
   };
@@ -62,7 +65,7 @@ export const FertilizerConfig: React.FC<FertilizerConfigProps> = ({ selectedCrop
                 <label className="block text-xs font-semibold text-gray-500 mb-1">Tamaño del terreno</label>
                 <input
                   type="number"
-                  min="0"
+                  min="0.01"
                   step="0.1"
                   required
                   value={areaSize}
@@ -112,8 +115,8 @@ export const FertilizerConfig: React.FC<FertilizerConfigProps> = ({ selectedCrop
                 </label>
                 <input
                   type="number"
-                  min="0"
-                  step="1"
+                  min="0.01"
+                  step="0.1"
                   required
                   value={targetYield}
                   onChange={(e) => setTargetYield(e.target.value)}

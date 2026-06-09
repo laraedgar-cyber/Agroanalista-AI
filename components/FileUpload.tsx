@@ -5,8 +5,25 @@ interface FileUploadProps {
   disabled?: boolean;
 }
 
+const MAX_FILE_SIZE_MB = 8;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
 export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, disabled }) => {
   const [isDragging, setIsDragging] = useState(false);
+
+  const validateAndSelectFile = useCallback((file: File) => {
+    if (file.type !== 'application/pdf' && !file.type.startsWith('image/')) {
+      alert('Por favor sube un archivo PDF o una imagen del análisis.');
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      alert(`El archivo debe pesar menos de ${MAX_FILE_SIZE_MB} MB.`);
+      return;
+    }
+
+    onFileSelect(file);
+  }, [onFileSelect]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -24,20 +41,15 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, disabled }
     if (disabled) return;
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
-      if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
-        onFileSelect(file);
-      } else {
-        alert('Por favor sube un archivo PDF o una imagen del análisis.');
-      }
+      validateAndSelectFile(e.dataTransfer.files[0]);
     }
-  }, [onFileSelect, disabled]);
+  }, [validateAndSelectFile, disabled]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      onFileSelect(e.target.files[0]);
+      validateAndSelectFile(e.target.files[0]);
     }
-  }, [onFileSelect]);
+  }, [validateAndSelectFile]);
 
   return (
     <div className="w-full max-w-2xl mx-auto mt-8">
@@ -75,6 +87,9 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, disabled }
             </h3>
             <p className="text-sm text-gray-500">
               Arrastra y suelta tu PDF aquí, o haz clic para seleccionar
+            </p>
+            <p className="text-xs text-gray-400">
+              PDF o imagen, máximo {MAX_FILE_SIZE_MB} MB
             </p>
           </div>
           
